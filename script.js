@@ -1,70 +1,117 @@
 // --- VARIABLES GLOBALES ---
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-// 5 jours x 4 créneaux
 let schedule = JSON.parse(localStorage.getItem('schedule')) || Array(5).fill().map(() => Array(4).fill(""));
 let grades = JSON.parse(localStorage.getItem('grades')) || [];
 let username = localStorage.getItem('username') || "";
 let memo = localStorage.getItem('memo') || "";
 
+// HABITUDES (Liste personnalisable)
+let habits = JSON.parse(localStorage.getItem('habits')) || [
+    { id: 1, text: "Boire de l'eau 💧", done: false },
+    { id: 2, text: "Lire 10 pages 📖", done: false }
+];
+let lastHabitDate = localStorage.getItem('lastHabitDate') || new Date().toDateString();
+
 // --- INIT ---
 document.addEventListener('DOMContentLoaded', () => {
     checkLogin();
+    checkDailyReset();
     updateBudgetUI();
     updateTasksUI();
     loadScheduleUI();
     updateGradesUI();
+    updateHabitsUI();
     document.getElementById('quick-memo').value = memo;
-    
-    // On lance la détection du prochain cours
     updateNextEvent();
 });
 
-// --- LOGIQUE "PROCHAIN ÉVÉNEMENT" (INTELLIGENT) ---
+// --- HABIT TRACKER (PERSONNALISABLE) ---
+function checkDailyReset() {
+    const today = new Date().toDateString();
+    if (lastHabitDate !== today) {
+        habits.forEach(h => h.done = false);
+        lastHabitDate = today;
+        saveData();
+    }
+}
+
+function addHabit() {
+    const input = document.getElementById('new-habit-text');
+    const text = input.value.trim();
+    if (text === "") return;
+
+    habits.push({ id: Date.now(), text: text, done: false });
+    saveData();
+    updateHabitsUI();
+    input.value = ""; // Vider l'input
+}
+
+function deleteHabit(id) {
+    if(confirm("Supprimer cette habitude ?")) {
+        habits = habits.filter(h => h.id !== id);
+        saveData();
+        updateHabitsUI();
+    }
+}
+
+function toggleHabit(id) {
+    const habit = habits.find(h => h.id === id);
+    if (habit) {
+        habit.done = !habit.done;
+        saveData();
+        updateHabitsUI();
+    }
+}
+
+function updateHabitsUI() {
+    const list = document.getElementById('habits-list');
+    list.innerHTML = "";
+    habits.forEach(h => {
+        const div = document.createElement('div');
+        div.className = `habit-item ${h.done ? 'habit-done' : ''}`;
+        
+        // Structure: Zone cliquable (checkbox + texte) ET Bouton poubelle séparé
+        div.innerHTML = `
+            <div class="habit-content" onclick="toggleHabit(${h.id})">
+                <input type="checkbox" ${h.done ? 'checked' : ''}>
+                <span>${h.text}</span>
+            </div>
+            <button onclick="deleteHabit(${h.id})" class="delete-habit-btn">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        `;
+        list.appendChild(div);
+    });
+}
+
+// --- NEXT EVENT ---
 function updateNextEvent() {
     const now = new Date();
-    const currentDayJS = now.getDay(); // 0=Dim, 1=Lun, ..., 6=Sam
+    const currentDayJS = now.getDay();
     const currentHour = now.getHours();
-    
     const eventDisplay = document.getElementById('next-event');
 
-    // 1. Gérer le Week-End
     if (currentDayJS === 0 || currentDayJS === 6) {
         eventDisplay.innerText = "C'est le Week-end ! 🎉";
         return;
     }
 
-    // 2. Convertir jour JS (1-5) en jour Array (0-4)
     const todayIndex = currentDayJS - 1;
     const todaySchedule = schedule[todayIndex];
-
-    // 3. Définir les heures de FIN des créneaux
-    // Slot 0 (8-10) finit à 10h
-    // Slot 1 (10-12) finit à 12h
-    // Slot 2 (14-16) finit à 16h
-    // Slot 3 (16-18) finit à 18h
     const slotEndHours = [10, 12, 16, 18];
     const slotNames = ["08h-10h", "10h-12h", "14h-16h", "16h-18h"];
-
     let foundEvent = "Rien de prévu auj. 💤";
 
-    // 4. Boucle pour trouver le prochain truc NON VIDE
     for (let i = 0; i < 4; i++) {
-        // Si le créneau n'est pas vide ET que l'heure actuelle est avant la fin du créneau
         if (todaySchedule[i] && todaySchedule[i].trim() !== "" && currentHour < slotEndHours[i]) {
             foundEvent = `${todaySchedule[i]} \n(${slotNames[i]})`;
-            break; // On a trouvé le prochain, on arrête de chercher
+            break;
         }
     }
-
-    // 5. Cas spécial : Soirée
-    if (currentHour >= 18) {
-        foundEvent = "Journée terminée ! 🌙";
-    }
-
+    if (currentHour >= 18) foundEvent = "Journée terminée ! 🌙";
     eventDisplay.innerText = foundEvent;
 }
-
 
 // --- LOGIN ---
 function checkLogin() {
@@ -107,7 +154,7 @@ function saveSchedule() {
         schedule[input.dataset.day][input.dataset.slot] = input.value;
     });
     localStorage.setItem('schedule', JSON.stringify(schedule));
-    updateNextEvent(); // Met à jour l'accueil direct quand on change le planning
+    updateNextEvent();
 }
 function saveMemo() {
     const val = document.getElementById('quick-memo').value;
@@ -179,6 +226,8 @@ function saveData() {
     localStorage.setItem('transactions', JSON.stringify(transactions));
     localStorage.setItem('tasks', JSON.stringify(tasks));
     localStorage.setItem('grades', JSON.stringify(grades));
+    localStorage.setItem('habits', JSON.stringify(habits));
+    localStorage.setItem('lastHabitDate', lastHabitDate);
 }
 
 // --- TIMER ---
