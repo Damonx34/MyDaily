@@ -3,50 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudentOS - Ton assistant quotidien</title>
+    <title>StudentOS Ultimate</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-    <header>
-        <h1>🎓 StudentOS</h1>
-        <p>Gère ta vie étudiante sans stress.</p>
-    </header>
-
-    <main>
-        <div class="dashboard-grid">
-            
-            <div class="card" onclick="alert('Bientôt disponible : Gestion du Budget !')">
-                <div class="icon">💰</div>
-                <h2>Thunes</h2>
-                <p>Gérer mon budget</p>
+    <div id="login-screen" class="login-overlay">
+        <div class="login-box">
+            <div class="logo-large">
+                <i class="fa-solid fa-graduation-cap"></i> Student<span>OS</span>
             </div>
-
-            <div class="card" onclick="alert('Bientôt disponible : Recettes faciles !')">
-                <div class="icon">🍔</div>
-                <h2>Miam</h2>
-                <p>Cuisine pas chère</p>
-            </div>
-
-            <div class="card" onclick="alert('Bientôt disponible : Aide administrative !')">
-                <div class="icon">📄</div>
-                <h2>Papiers</h2>
-                <p>Modèles de lettres</p>
-            </div>
-
-            <div class="card" onclick="alert('Bientôt disponible : Mode Concentration !')">
-                <div class="icon">⏱️</div>
-                <h2>Focus</h2>
-                <p>Mode travail</p>
-            </div>
-
+            <h2>Bienvenue</h2>
+            <p>Connecte-toi pour accéder à ton espace.</p>
+            <input type="text" id="username-input" placeholder="Ton Prénom">
+            <button onclick="loginUser()" class="btn-primary full-width">Entrer</button>
         </div>
-    </main>
+    </div>
 
-    <footer>
-        <p>© 2024 StudentOS - Fait avec ❤️ par Toi</p>
-    </footer>
+    <div class="app-container" id="app-interface" style="display:none;">
+        
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fa-solid fa-graduation-cap"></i> Student<span>OS</span>
+            </div>
+            <nav>
+                <ul>
+                    <li class="active" onclick="showSection('dashboard')">
+                        <i class="fa-solid fa-house"></i> Accueil
+                    </li>
+                    <li onclick="showSection('schedule')">
+                        <i class="fa-solid fa-calendar-days"></i> Planning
+                    </li>
+                    <li onclick="showSection('budget')">
+                        <i class="fa-solid fa-wallet"></i> Compte
+                    </li>
+                    <li onclick="showSection('todo')">
+                        <i class="fa-solid fa-list-check"></i> Tâches
+                    </li>
+                    <li onclick="showSection('focus')">
+                        <i class="fa-solid fa-clock"></i> Focus
+                    </li>
+                </ul>
+            </nav>
+            <div class="user-profile">
+                <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                <div class="user-info">
+                    <h4 id="display-username">Invité</h4>
+                    <p onclick="logoutUser()" style="cursor:pointer; color:#ef4444; font-size:0.8rem;">Déconnexion</p>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            
+            <section id="dashboard" class="section active-section">
+                <header>
+                    <h1>Salut, <span class="highlight" id="dashboard-username">Toi</span> 👋</h1>
+                    <p>Prêt à tout déchirer aujourd'hui ?</p>
+                </header>
+                
+                <div class="stats-grid">
+                    <div class="stat-card blue">
+                        <h3>Solde Actuel</h3>
+                        <p id="dashboard-balance">0.00 €</p>
+                    </div>
+                    <div class="stat-card purple">
+                        <h3>Tâches restantes</h3>
+                        <p id="pending-tasks">0</p>
+                    </div>
+                    <div class="stat-card orange">
+                        <h3>Prochain Cours</h3>
+                        <p id="next-course">Libre</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="schedule" class="section hidden">
+                <header>
+                    <h1>Mon Emploi du Temps</h1>
+                    <p>Organise ta semaine de cours et de révisions.</p>
+                </header>
+
+                <div class="schedule-grid">
+                    <div class="day-column">
+                        <h3>Lundi</h3>
+                        <div class="time-slot"><input type="text" placeholder="08h-10h" onchange="saveSchedule()" data-day="0" data-slot="0"></div>
+                        <div class="time-slot"><input type="text" placeholder="10h-12h" onchange="saveSchedule()" data-day="0" data-slot="1"></div>
+                        <div class="time-slot"><input type="text" placeholder="14h-16h" onchange="saveSchedule()" data-day="0" data-slot="2"></div>
+                        <div class="time-slot"><input type="text" placeholder="16h-18h" onchange="saveSchedule()" data-day="0" data-slot="3"></div>
+                    </div>
+                    <div class="day-column">
+                        <h3>Mardi</h3>
+                        <div class="time-slot"><input type="text" placeholder="08h-10h" onchange="saveSchedule()" data-day="1" data-slot="0"></div>
+                        <div class="time-slot"><input type="text" placeholder="10h-12h" onchange="saveSchedule()" data-day="1" data-slot="1"></div>
+                        <div class="time-slot"><input type="text" placeholder="14h-16h" onchange="saveSchedule()" data-day="1" data-slot="2"></div>
+                        <div class="time-slot"><input type="text" placeholder="16h-18h" onchange="saveSchedule()" data-day="1" data-slot="3"></div>
+                    </div>
+                    <div class="day-column">
+                        <h3>Mercredi</h3>
+                        <div class="time-slot"><input type="text" placeholder="08h-10h" onchange="saveSchedule()" data-day="2" data-slot="0"></div>
+                        <div class="time-slot"><input type="text" placeholder="10h-12h" onchange="saveSchedule()" data-day="2" data-slot="1"></div>
+                        <div class="time-slot"><input type="text" placeholder="14h-16h" onchange="saveSchedule()" data-day="2" data-slot="2"></div>
+                        <div class="time-slot"><input type="text" placeholder="16h-18h" onchange="saveSchedule()" data-day="2" data-slot="3"></div>
+                    </div>
+                    <div class="day-column">
+                        <h3>Jeudi</h3>
+                        <div class="time-slot"><input type="text" placeholder="08h-10h" onchange="saveSchedule()" data-day="3" data-slot="0"></div>
+                        <div class="time-slot"><input type="text" placeholder="10h-12h" onchange="saveSchedule()" data-day="3" data-slot="1"></div>
+                        <div class="time-slot"><input type="text" placeholder="14h-16h" onchange="saveSchedule()" data-day="3" data-slot="2"></div>
+                        <div class="time-slot"><input type="text" placeholder="16h-18h" onchange="saveSchedule()" data-day="3" data-slot="3"></div>
+                    </div>
+                    <div class="day-column">
+                        <h3>Vendredi</h3>
+                        <div class="time-slot"><input type="text" placeholder="08h-10h" onchange="saveSchedule()" data-day="4" data-slot="0"></div>
+                        <div class="time-slot"><input type="text" placeholder="10h-12h" onchange="saveSchedule()" data-day="4" data-slot="1"></div>
+                        <div class="time-slot"><input type="text" placeholder="14h-16h" onchange="saveSchedule()" data-day="4" data-slot="2"></div>
+                        <div class="time-slot"><input type="text" placeholder="16h-18h" onchange="saveSchedule()" data-day="4" data-slot="3"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="budget" class="section hidden">
+                <header>
+                    <h1>Mon Compte</h1>
+                </header>
+                <div class="bank-card">
+                    <div class="card-balance">
+                        <span>Solde Disponible</span>
+                        <h1 id="main-balance">0.00 €</h1>
+                    </div>
+                    <div class="card-details">
+                        <div class="income-detail">
+                            <span>Entrées</span>
+                            <p id="total-income" class="text-green">+0.00 €</p>
+                        </div>
+                        <div class="expense-detail">
+                            <span>Dépenses</span>
+                            <p id="total-expense" class="text-red">-0.00 €</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="transaction-controls">
+                    <div class="input-group-budget">
+                        <input type="text" id="trans-name" placeholder="Quoi ?">
+                        <input type="number" id="trans-amount" placeholder="Combien ?">
+                        <div class="buttons-row">
+                            <button onclick="addMoney()" class="btn-income"><i class="fa-solid fa-arrow-up"></i> Reçu</button>
+                            <button onclick="removeMoney()" class="btn-expense"><i class="fa-solid fa-arrow-down"></i> Payé</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="transactions-list">
+                    <ul id="transaction-history"></ul>
+                </div>
+            </section>
+
+            <section id="todo" class="section hidden">
+                <header>
+                    <h1>Mes Tâches</h1>
+                </header>
+                <div class="todo-input">
+                    <input type="text" id="new-task" placeholder="Nouvelle tâche...">
+                    <button onclick="addTask()" class="btn-primary">Ajouter</button>
+                </div>
+                <ul id="todo-list"></ul>
+            </section>
+
+             <section id="focus" class="section hidden">
+                <header>
+                    <h1>Mode Focus</h1>
+                </header>
+                <div class="timer-container">
+                    <div class="timer-display" id="timer">25:00</div>
+                    <div class="timer-controls">
+                        <button onclick="startTimer()" class="btn-primary">Start</button>
+                        <button onclick="resetTimer()" class="btn-secondary">Reset</button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
 
     <script src="script.js"></script>
 </body>
